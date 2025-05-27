@@ -19,10 +19,10 @@ const Footer = () => {
                 <div className="w-10 h-10 rounded-full bg-agency-purple flex items-center justify-center mr-2">
                   <span className="text-white text-lg font-bold">N</span>
                 </div>
-                <span className="text-2xl font-bold">
+              <span className="text-2xl font-bold">
                   <span className="text-white">Next</span>
-                  <span className="text-agency-purple">Dev</span>
-                </span>
+                <span className="text-agency-purple">Dev</span>
+              </span>
               </div>
             </div>
             <p className="text-gray-300 mb-4">

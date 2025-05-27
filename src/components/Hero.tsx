@@ -79,13 +79,13 @@ const Hero = () => {
                 duration={500}
                 offset={-80}
               >
-                <Button
-                  size="lg"
+              <Button
+                size="lg"
                   className="bg-agency-bright-blue hover:bg-agency-purple text-white cursor-pointer"
-                >
-                  {optimizedContent.ctaText}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+              >
+                {optimizedContent.ctaText}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
               </ScrollLink>
               <ScrollLink
                 to="portfolio"
@@ -93,13 +93,13 @@ const Hero = () => {
                 duration={500}
                 offset={-80}
               >
-                <Button
-                  size="lg"
-                  variant="outline"
+              <Button
+                size="lg"
+                variant="outline"
                   className="border-agency-bright-blue text-agency-bright-blue hover:bg-agency-bright-blue hover:text-white cursor-pointer"
-                >
-                  View My Work
-                </Button>
+              >
+                View My Work
+              </Button>
               </ScrollLink>
             </div>
           </motion.div>
@@ -150,8 +150,8 @@ const Hero = () => {
             duration={500}
             offset={-80}
             className="cursor-pointer"
-          >
-            <ChevronDown className="h-8 w-8 text-gray-400 animate-bounce" />
+        >
+          <ChevronDown className="h-8 w-8 text-gray-400 animate-bounce" />
           </ScrollLink>
         </motion.div>
       </div>
