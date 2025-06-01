@@ -70,7 +70,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      await contactService.createMessage(formData);
+      await contactService.sendMessage(formData);
       toast({
         title: "Message Sent!",
         description: "Thank you for contacting me. I'll get back to you soon.",
