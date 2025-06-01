@@ -1,10 +1,9 @@
-import { ID, Query, Models } from "appwrite";
-import { databases } from "@/lib/appwrite";
-import { sendEmail, EmailData } from '../functions/sendEmail';
+// import { ID, Query, Models } from "appwrite"; // Removed Appwrite import
+// import { databases } from "@/lib/appwrite"; // Removed Appwrite import
+// import { sendEmail, EmailData } from '../functions/sendEmail'; // Removed email sending import
 
-// Define the ContactMessage interface
+// Define the ContactMessage interface (simplified for frontend use)
 export interface ContactMessage {
-    id: string;
     name: string;
     email: string;
     phone?: string;
@@ -12,284 +11,42 @@ export interface ContactMessage {
     message: string;
     service?: string;
     pricing?: string;
-    status: 'new' | 'read' | 'replied';
-    createdAt: Date;
-    updatedAt: Date;
+    // Removed backend-specific fields like id, status, dates
 }
 
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
-const CONTACT_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CONTACT_COLLECTION_ID;
-
-// Helper function to convert Appwrite Document to ContactMessage
-const convertToContactMessage = (doc: Models.Document): ContactMessage => ({
-    id: doc.$id,
-    name: doc.name,
-    email: doc.email,
-    phone: doc.phone,
-    subject: doc.subject,
-    message: doc.message,
-    service: doc.service,
-    pricing: doc.pricing,
-    status: doc.status,
-    createdAt: new Date(doc.createdAt),
-    updatedAt: new Date(doc.updatedAt)
-});
+// Removed Appwrite constants and helper function
+// const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+// const CONTACT_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CONTACT_COLLECTION_ID;
+// const convertToContactMessage = (doc: Models.Document): ContactMessage => ({ ... });
 
 export const contactService = {
-    async createMessage(message: Omit<ContactMessage, 'id' | 'status' | 'createdAt' | 'updatedAt'>) {
+    async sendMessage(message: ContactMessage): Promise<void> { // Changed return type to void
         try {
-            console.log('Creating message in database...');
-            const newMessage = await databases.createDocument(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                ID.unique(),
-                {
-                    ...message,
-                    status: 'new',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                }
-            );
-            console.log('Message created successfully:', newMessage);
+            console.log('Sending message to backend...', message);
 
-            // Send email notification
-            console.log('Attempting to send email notification...');
-            await this.sendEmailNotification(convertToContactMessage(newMessage));
-            console.log('Email notification sent successfully');
+            const response = await fetch('/api/contact', { // Use the new backend endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
 
-            return convertToContactMessage(newMessage);
-        } catch (error) {
-            console.error('Error in createMessage:', error);
-            if (error instanceof Error) {
-                throw new Error(`Failed to create message: ${error.message}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to send message to backend');
             }
-            throw new Error('Failed to create message');
-        }
-    },
 
-    async sendEmailNotification(message: ContactMessage) {
-        try {
-            console.log('Preparing email content...');
-            const plainText = `
-New Contact Form Submission
-
-From: ${message.name}
-Email: ${message.email}
-${message.phone ? `Phone: ${message.phone}` : ''}
-Subject: ${message.subject}
-${message.service ? `Service: ${message.service}` : ''}
-${message.pricing ? `Pricing Plan: ${message.pricing}` : ''}
-
-Message:
-${message.message}
-
-Submitted on: ${new Date(message.createdAt).toLocaleString()}
-            `.trim();
-
-            const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #6B46C1; color: white; padding: 20px; text-align: center; }
-        .content { padding: 20px; background-color: #f9f9f9; }
-        .field { margin-bottom: 15px; }
-        .label { font-weight: bold; color: #6B46C1; }
-        .message { background-color: white; padding: 15px; border-left: 4px solid #6B46C1; margin: 15px 0; }
-        .footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>New Contact Form Submission</h2>
-        </div>
-        <div class="content">
-            <div class="field">
-                <span class="label">From:</span> ${message.name}
-            </div>
-            <div class="field">
-                <span class="label">Email:</span> ${message.email}
-            </div>
-            ${message.phone ? `
-            <div class="field">
-                <span class="label">Phone:</span> ${message.phone}
-            </div>
-            ` : ''}
-            <div class="field">
-                <span class="label">Subject:</span> ${message.subject}
-            </div>
-            ${message.service ? `
-            <div class="field">
-                <span class="label">Service:</span> ${message.service}
-            </div>
-            ` : ''}
-            ${message.pricing ? `
-            <div class="field">
-                <span class="label">Pricing Plan:</span> ${message.pricing}
-            </div>
-            ` : ''}
-            <div class="field">
-                <span class="label">Message:</span>
-                <div class="message">${message.message.replace(/\n/g, '<br>')}</div>
-            </div>
-        </div>
-        <div class="footer">
-            <p>Submitted on: ${new Date(message.createdAt).toLocaleString()}</p>
-            <p>This is an automated message from your website's contact form.</p>
-        </div>
-    </div>
-</body>
-</html>
-            `.trim();
-
-            console.log('Creating email data...');
-            const emailData: EmailData = {
-                to: 'nmertechh@gmail.com',
-                subject: `New Contact Form Submission from ${message.name}`,
-                text: plainText,
-                html: htmlContent,
-                replyTo: message.email
-            };
-
-            console.log('Sending email...');
-            const response = await sendEmail(emailData);
-            console.log('Email sent successfully:', response);
+            console.log('Message sent successfully to backend');
+            // No need to return the message with backend-specific fields anymore
         } catch (error) {
-            console.error('Error in sendEmailNotification:', error);
+            console.error('Error in sendMessage:', error);
             if (error instanceof Error) {
-                throw new Error(`Failed to send email notification: ${error.message}`);
+                throw new Error(`Failed to send message: ${error.message}`);
             }
-            throw new Error('Failed to send email notification');
+            throw new Error('Failed to send message');
         }
     },
 
-    async getMessages() {
-        try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                [Query.orderDesc('createdAt')]
-            );
-
-            return response.documents.map(convertToContactMessage);
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            throw error;
-        }
-    },
-
-    async getUnreadMessages() {
-        try {
-            return await databases.listDocuments(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                [
-                    Query.equal('status', 'new'),
-                    Query.orderDesc('createdAt')
-                ]
-            );
-        } catch (error) {
-            console.error('Error getting unread messages:', error);
-            throw error;
-        }
-    },
-
-    async getMessageById(id: string) {
-        try {
-            return await databases.getDocument(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                id
-            );
-        } catch (error) {
-            console.error('Error getting message:', error);
-            throw error;
-        }
-    },
-
-    async updateMessageStatus(id: string, status: ContactMessage['status']) {
-        try {
-            return await databases.updateDocument(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                id,
-                {
-                    status,
-                    updatedAt: new Date().toISOString()
-                }
-            );
-        } catch (error) {
-            console.error('Error updating message status:', error);
-            throw error;
-        }
-    },
-
-    async deleteMessage(id: string) {
-        try {
-            return await databases.deleteDocument(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                id
-            );
-        } catch (error) {
-            console.error('Error deleting message:', error);
-            throw error;
-        }
-    },
-
-    async getContactMessages() {
-        try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                [Query.orderDesc('createdAt')]
-            );
-            return response.documents.map(doc => ({
-                id: doc.$id,
-                name: doc.name,
-                email: doc.email,
-                phone: doc.phone,
-                subject: doc.subject,
-                message: doc.message,
-                service: doc.service,
-                pricing: doc.pricing,
-                status: doc.status,
-                createdAt: new Date(doc.createdAt),
-                updatedAt: new Date(doc.updatedAt)
-            }));
-        } catch (error) {
-            console.error('Error getting contact messages:', error);
-            throw error;
-        }
-    },
-
-    async sendMessage(message: Omit<ContactMessage, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContactMessage> {
-        try {
-            const response = await databases.createDocument(
-                DATABASE_ID,
-                CONTACT_COLLECTION_ID,
-                ID.unique(),
-                {
-                    name: message.name,
-                    email: message.email,
-                    phone: message.phone,
-                    subject: message.subject,
-                    message: message.message,
-                    service: message.service,
-                    pricing: message.pricing,
-                    status: 'new',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                }
-            );
-
-            return convertToContactMessage(response);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            throw error;
-        }
-    }
-}; 
+    // Removed all other Appwrite-specific functions (getMessages, getUnreadMessages, etc.)
+};

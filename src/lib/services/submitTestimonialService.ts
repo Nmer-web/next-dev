@@ -1,5 +1,5 @@
-import { ID } from 'appwrite';
-import { databases, DATABASE_ID, COLLECTIONS } from '../appwrite';
+// import { ID } from 'appwrite'; // Removed Appwrite import
+// import { databases, DATABASE_ID, COLLECTIONS } from '../appwrite'; // Removed Appwrite imports
 
 export interface NewTestimonial {
     clientName: string;
@@ -9,42 +9,34 @@ export interface NewTestimonial {
     rating: number;
 }
 
-export interface SubmittedTestimonial extends NewTestimonial {
-    id: string;
-    status: 'pending' | 'approved' | 'rejected'; // Add a status field
-    createdAt: Date;
-    updatedAt: Date;
-}
+// Simplified interface for frontend use
+// export interface SubmittedTestimonial extends NewTestimonial {
+//     id: string;
+//     status: 'pending' | 'approved' | 'rejected'; // Add a status field
+//     createdAt: Date;
+//     updatedAt: Date;
+// }
 
 export const submitTestimonialService = {
-    async submitTestimonial(testimonial: NewTestimonial): Promise<SubmittedTestimonial> {
+    async submitTestimonial(testimonial: NewTestimonial): Promise<void> { // Changed return type to void
         try {
-            const newDoc = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.TESTIMONIALS,
-                ID.unique(),
-                {
-                    ...testimonial,
-                    status: 'pending', // Set initial status to pending
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                }
-            );
+            console.log('Sending testimonial to backend...', testimonial);
 
-            // Convert the document to the SubmittedTestimonial type
-            const submittedTestimonial: SubmittedTestimonial = {
-                id: newDoc.$id,
-                clientName: newDoc.clientName,
-                clientRole: newDoc.clientRole,
-                clientCompany: newDoc.clientCompany,
-                content: newDoc.content,
-                rating: newDoc.rating,
-                status: newDoc.status,
-                createdAt: new Date(newDoc.createdAt),
-                updatedAt: new Date(newDoc.updatedAt)
-            };
+            const response = await fetch('/api/testimonials', { // Use the new backend endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(testimonial),
+            });
 
-            return submittedTestimonial;
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 throw new Error(errorData.message || 'Failed to submit testimonial to backend');
+            }
+
+            console.log('Testimonial sent successfully to backend');
+            // No need to return the submitted testimonial object from the frontend
         } catch (error) {
             console.error('Error submitting testimonial:', error);
             if (error instanceof Error) {
