@@ -3,7 +3,7 @@ import { Client, Account, Databases, Storage } from 'appwrite';
 // Initialize Appwrite Client
 const client = new Client()
     .setEndpoint('https://fra.cloud.appwrite.io/v1')
-    .setProject('6835a93d0010f6e0aca1');
+    .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
 
 // Initialize Appwrite Services
 export const account = new Account(client);
@@ -11,11 +11,11 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 
 // Database and Collection IDs
-export const DATABASE_ID = 'vibedesign_db';
+export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 export const COLLECTIONS = {
     USERS: 'users',
     PROJECTS: 'projects',
-    TESTIMONIALS: 'testimonials',
+    TESTIMONIALS: import.meta.env.VITE_APPWRITE_TESTIMONIALS_COLLECTION_ID,
     CONTACT_MESSAGES: 'contact_messages'
 };
 
