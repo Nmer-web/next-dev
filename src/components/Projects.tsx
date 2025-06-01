@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { projectService, Project } from "@/lib/services/projectService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,21 @@ const Projects = () => {
     const fetchProjects = async () => {
       try {
         const response = await projectService.getFeaturedProjects();
-        setProjects(response.documents as Project[]);
+        setProjects(response.documents.map(doc => ({
+          id: doc.$id,
+          title: doc.title,
+          description: doc.description,
+          imageUrl: doc.imageUrl,
+          technologies: doc.technologies,
+          liveUrl: doc.liveUrl,
+          githubUrl: doc.githubUrl,
+          featured: doc.featured,
+          category: doc.category,
+          clientName: doc.clientName,
+          completionDate: doc.completionDate,
+          createdAt: new Date(doc.createdAt),
+          updatedAt: new Date(doc.updatedAt)
+        })) as Project[]);
       } catch (error) {
         toast({
           title: "Error",
