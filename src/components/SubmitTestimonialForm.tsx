@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
 
 // Assume a service exists to handle the submission
 // import { submitTestimonial } from '@/lib/services/submitTestimonialService';
