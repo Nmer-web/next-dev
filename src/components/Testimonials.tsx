@@ -2,19 +2,40 @@ import React, { useEffect, useState } from "react";
 import { testimonialService, Testimonial } from "@/lib/services/testimonialService";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
 
 const Testimonials = () => {
   const { toast } = useToast();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await testimonialService.getFeaturedTestimonials();
-        setTestimonials(response.documents as Testimonial[]);
+        
+        if (!response || !response.documents) {
+          throw new Error('No testimonials data received');
+        }
+
+        setTestimonials(response.documents.map(doc => ({
+          id: doc.$id,
+          clientName: doc.clientName,
+          clientRole: doc.clientRole,
+          clientCompany: doc.clientCompany,
+          content: doc.content,
+          rating: doc.rating,
+          projectId: doc.projectId,
+          imageUrl: doc.imageUrl,
+          createdAt: new Date(doc.createdAt),
+          updatedAt: new Date(doc.updatedAt)
+        })));
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load testimonials';
+        setError(errorMessage);
         toast({
           title: "Error",
           description: "Failed to load testimonials. Please try again later.",
@@ -33,7 +54,34 @@ const Testimonials = () => {
       <section id="testimonials" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="mb-4 text-agency-blue">Loading Testimonials...</h2>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-agency-blue" />
+            <h2 className="mt-4 text-agency-blue">Loading Testimonials...</h2>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="testimonials" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="mb-4 text-red-500">Unable to Load Testimonials</h2>
+            <p className="text-gray-600">Please try refreshing the page</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return (
+      <section id="testimonials" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="mb-4 text-agency-blue">No Testimonials Available</h2>
+            <p className="text-gray-600">Check back later for client testimonials</p>
           </div>
         </div>
       </section>
@@ -60,6 +108,9 @@ const Testimonials = () => {
                       src={testimonial.imageUrl}
                       alt={testimonial.clientName}
                       className="w-12 h-12 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.clientName)}&background=random`;
+                      }}
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-agency-purple/10 flex items-center justify-center">
