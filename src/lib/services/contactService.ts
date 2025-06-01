@@ -221,5 +221,28 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
             console.error('Error deleting message:', error);
             throw error;
         }
+    },
+
+    async getContactMessages() {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.CONTACT_MESSAGES,
+                [Query.orderDesc('createdAt')]
+            );
+            return response.documents.map(doc => ({
+                id: doc.$id,
+                name: doc.name,
+                email: doc.email,
+                subject: doc.subject,
+                message: doc.message,
+                status: doc.status,
+                createdAt: new Date(doc.createdAt),
+                updatedAt: new Date(doc.updatedAt)
+            }));
+        } catch (error) {
+            console.error('Error getting contact messages:', error);
+            throw error;
+        }
     }
 }; 

@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { ArrowRight, Code, Cpu, Paintbrush, CheckCircle, Sparkles, Star, Zap, ChevronDown } from "lucide-react";
 import { Link as ScrollLink } from "react-scroll";
-import { Link } from "react-router-dom";
-import { Button } from '@/components/ui/button';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const Hero = () => {
