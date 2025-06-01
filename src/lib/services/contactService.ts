@@ -1,7 +1,8 @@
-import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, COLLECTIONS } from '../appwrite';
+import { ID, Query, Models } from "appwrite";
+import { databases } from "@/lib/appwrite";
 import { sendEmail, EmailData } from '../functions/sendEmail';
 
+// Define the ContactMessage interface
 export interface ContactMessage {
     id: string;
     name: string;
@@ -16,13 +17,31 @@ export interface ContactMessage {
     updatedAt: Date;
 }
 
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const CONTACT_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CONTACT_COLLECTION_ID;
+
+// Helper function to convert Appwrite Document to ContactMessage
+const convertToContactMessage = (doc: Models.Document): ContactMessage => ({
+    id: doc.$id,
+    name: doc.name,
+    email: doc.email,
+    phone: doc.phone,
+    subject: doc.subject,
+    message: doc.message,
+    service: doc.service,
+    pricing: doc.pricing,
+    status: doc.status,
+    createdAt: new Date(doc.createdAt),
+    updatedAt: new Date(doc.updatedAt)
+});
+
 export const contactService = {
     async createMessage(message: Omit<ContactMessage, 'id' | 'status' | 'createdAt' | 'updatedAt'>) {
         try {
             console.log('Creating message in database...');
             const newMessage = await databases.createDocument(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 ID.unique(),
                 {
                     ...message,
@@ -35,10 +54,10 @@ export const contactService = {
 
             // Send email notification
             console.log('Attempting to send email notification...');
-            await this.sendEmailNotification(newMessage);
+            await this.sendEmailNotification(convertToContactMessage(newMessage));
             console.log('Email notification sent successfully');
 
-            return newMessage;
+            return convertToContactMessage(newMessage);
         } catch (error) {
             console.error('Error in createMessage:', error);
             if (error instanceof Error) {
@@ -147,19 +166,17 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         }
     },
 
-    async getMessages(limit = 10, offset = 0) {
+    async getMessages() {
         try {
-            return await databases.listDocuments(
+            const response = await databases.listDocuments(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
-                [
-                    Query.limit(limit),
-                    Query.offset(offset),
-                    Query.orderDesc('createdAt')
-                ]
+                CONTACT_COLLECTION_ID,
+                [Query.orderDesc('createdAt')]
             );
+
+            return response.documents.map(convertToContactMessage);
         } catch (error) {
-            console.error('Error getting messages:', error);
+            console.error('Error fetching messages:', error);
             throw error;
         }
     },
@@ -168,7 +185,7 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         try {
             return await databases.listDocuments(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 [
                     Query.equal('status', 'new'),
                     Query.orderDesc('createdAt')
@@ -184,7 +201,7 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         try {
             return await databases.getDocument(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 id
             );
         } catch (error) {
@@ -197,7 +214,7 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         try {
             return await databases.updateDocument(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 id,
                 {
                     status,
@@ -214,7 +231,7 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         try {
             return await databases.deleteDocument(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 id
             );
         } catch (error) {
@@ -227,21 +244,51 @@ Submitted on: ${new Date(message.createdAt).toLocaleString()}
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
-                COLLECTIONS.CONTACT_MESSAGES,
+                CONTACT_COLLECTION_ID,
                 [Query.orderDesc('createdAt')]
             );
             return response.documents.map(doc => ({
                 id: doc.$id,
                 name: doc.name,
                 email: doc.email,
+                phone: doc.phone,
                 subject: doc.subject,
                 message: doc.message,
+                service: doc.service,
+                pricing: doc.pricing,
                 status: doc.status,
                 createdAt: new Date(doc.createdAt),
                 updatedAt: new Date(doc.updatedAt)
             }));
         } catch (error) {
             console.error('Error getting contact messages:', error);
+            throw error;
+        }
+    },
+
+    async sendMessage(message: Omit<ContactMessage, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContactMessage> {
+        try {
+            const response = await databases.createDocument(
+                DATABASE_ID,
+                CONTACT_COLLECTION_ID,
+                ID.unique(),
+                {
+                    name: message.name,
+                    email: message.email,
+                    phone: message.phone,
+                    subject: message.subject,
+                    message: message.message,
+                    service: message.service,
+                    pricing: message.pricing,
+                    status: 'new',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }
+            );
+
+            return convertToContactMessage(response);
+        } catch (error) {
+            console.error('Error sending message:', error);
             throw error;
         }
     }

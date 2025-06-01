@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -7,7 +7,7 @@ import { Link as ScrollLink } from "react-scroll";
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const Hero = () => {
-  const containerRef = React.useRef(null);
+  const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
