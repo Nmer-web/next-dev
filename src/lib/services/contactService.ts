@@ -33,8 +33,19 @@ export const contactService = {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to send message to backend');
+                // Log the status and status text for better debugging
+                console.error('Backend response status:', response.status);
+                console.error('Backend response status text:', response.statusText);
+
+                try {
+                    const errorData = await response.json();
+                    console.error('Backend error data:', errorData);
+                    throw new Error(errorData.message || `Failed to send message to backend with status ${response.status}`);
+                } catch (jsonError) {
+                    console.error('Failed to parse backend error response as JSON:', jsonError);
+                     // If the response is not JSON, throw an error with status text
+                    throw new Error(`Failed to send message to backend: ${response.statusText} (Status: ${response.status})`);
+                }
             }
 
             console.log('Message sent successfully to backend');
