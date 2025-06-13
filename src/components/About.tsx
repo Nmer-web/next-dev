@@ -100,10 +100,15 @@ const About = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-          <div>
+          <div className="flex flex-col items-center">
+            <img 
+              src="/images/profile.png" 
+              alt="Profile Picture" 
+              className="rounded-full w-40 h-40 object-cover mx-auto mb-8 shadow-lg"
+            />
             <h3 className="text-2xl font-bold text-agency-blue mb-4">My Journey</h3>
             <p className="text-gray-600 mb-4">
-              With over 5 years of experience in web development, I've dedicated myself to mastering the art of creating beautiful, functional, and user-friendly websites. My journey began with a passion for both design and technology, and I've been fortunate to work with diverse clients across various industries.
+              With over 2 years of experience in web development, I've dedicated myself to mastering the art of creating beautiful, functional, and user-friendly websites. My journey began with a passion for both design and technology, and I've been fortunate to work with diverse clients across various industries.
             </p>
             <p className="text-gray-600 mb-4">
               I believe in the perfect balance between aesthetic appeal and technical innovation. Every project I take on is an opportunity to push boundaries and create something extraordinary. My approach combines creative thinking with technical expertise to deliver solutions that not only look great but drive real business results.
@@ -114,7 +119,7 @@ const About = () => {
                 <p className="text-gray-600">Projects Completed</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-agency-purple">5+</p>
+                <p className="text-4xl font-bold text-agency-purple">2+</p>
                 <p className="text-gray-600">Years Experience</p>
               </div>
               <div className="text-center">
