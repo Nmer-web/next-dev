@@ -104,7 +104,7 @@ const About = () => {
             <img 
               src="/images/profile.png" 
               alt="Profile Picture" 
-              className="rounded-full w-40 h-40 object-cover mx-auto mb-8 shadow-lg"
+              className="rounded-full w-40 h-40 object-contain mx-auto mb-8 shadow-lg"
             />
             <h3 className="text-2xl font-bold text-agency-blue mb-4">My Journey</h3>
             <p className="text-gray-600 mb-4">
