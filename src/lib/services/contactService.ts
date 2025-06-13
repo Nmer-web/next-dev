@@ -60,4 +60,4 @@ export const contactService = {
     },
 
     // Removed all other Appwrite-specific functions (getMessages, getUnreadMessages, etc.)
-};
+}; 
